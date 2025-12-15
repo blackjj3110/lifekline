@@ -167,18 +167,28 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
     // 解析 JSON
     let data;
     try {
-      // 尝试清理 JSON 字符串 (处理可能的 Markdown 代码块 ```json ... ```)
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      const cleanContent = jsonMatch ? jsonMatch[0] : content;
+      let cleanContent = content;
+
+      // 1. 移除 Markdown 代码块标记 (```json ... ```)
+      cleanContent = cleanContent.replace(/```json/gi, "").replace(/```/g, "");
+
+      // 2. 寻找最外层的 JSON 对象 {}
+      const firstBrace = cleanContent.indexOf('{');
+      const lastBrace = cleanContent.lastIndexOf('}');
+
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleanContent = cleanContent.substring(firstBrace, lastBrace + 1);
+      }
+
       data = JSON.parse(cleanContent);
     } catch (parseError) {
       console.error("JSON Parse Error. Raw content:", content);
-      throw new Error("模型返回的数据格式无法解析 (可能包含了非 JSON 内容)。");
+      throw new Error(`模型返回的数据格式无法解析。请重试。\n原始数据片段: ${content.substring(0, 50)}...`);
     }
 
-    // 简单校验数据完整性
-    if (!data.chartPoints || !Array.isArray(data.chartPoints)) {
-      throw new Error("模型返回的数据格式不正确（缺失 chartPoints）。");
+    // 简单校验数据完整性 (宽松模式: 只要有 chartPoints 数组即可)
+    if (!data?.chartPoints || !Array.isArray(data.chartPoints)) {
+      throw new Error("模型返回的数据缺少关键字段 chartPoints。");
     }
 
     return {
