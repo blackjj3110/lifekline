@@ -19,7 +19,8 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
     hourPillar: '',
     startAge: '',
     firstDaYun: '',
-    modelName: 'google/gemini-2.0-flash-exp',
+    modelName: 'gemini-1.5-pro',
+
     apiBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/',
 
     apiKey: '',
@@ -110,8 +111,8 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
                 type="button"
                 onClick={() => setFormData({ ...formData, gender: Gender.MALE })}
                 className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${formData.gender === Gender.MALE
-                    ? 'bg-white text-indigo-700 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 乾造 (男)
@@ -120,8 +121,8 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
                 type="button"
                 onClick={() => setFormData({ ...formData, gender: Gender.FEMALE })}
                 className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${formData.gender === Gender.FEMALE
-                    ? 'bg-white text-pink-700 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-pink-700 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 坤造 (女)
@@ -260,7 +261,7 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
                 name="modelName"
                 value={formData.modelName}
                 onChange={handleChange}
-                placeholder="google/gemini-2.0-flash-exp"
+                placeholder="gemini-1.5-pro"
                 className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.modelName ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
               />
               {formErrors.modelName && <p className="text-red-500 text-xs mt-1">{formErrors.modelName}</p>}
