@@ -19,7 +19,8 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
     hourPillar: '',
     startAge: '',
     firstDaYun: '',
-    modelName: 'gemini-1.5-pro',
+    modelName: 'gemini-2.5-pro',
+
 
     apiBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/',
 
@@ -261,7 +262,7 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
                 name="modelName"
                 value={formData.modelName}
                 onChange={handleChange}
-                placeholder="gemini-1.5-pro"
+                placeholder="gemini-2.5-pro"
                 className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.modelName ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
               />
               {formErrors.modelName && <p className="text-red-500 text-xs mt-1">{formErrors.modelName}</p>}
