@@ -8,14 +8,14 @@ const getStemPolarity = (pillar: string): 'YANG' | 'YIN' => {
   const firstChar = pillar.trim().charAt(0);
   const yangStems = ['甲', '丙', '戊', '庚', '壬'];
   const yinStems = ['乙', '丁', '己', '辛', '癸'];
-  
+
   if (yangStems.includes(firstChar)) return 'YANG';
   if (yinStems.includes(firstChar)) return 'YIN';
   return 'YANG'; // fallback
 };
 
 export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestinyResult> => {
-  
+
   const { apiKey, apiBaseUrl, modelName } = input;
 
   if (!apiKey || !apiKey.trim()) {
@@ -32,7 +32,7 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
 
   const genderStr = input.gender === Gender.MALE ? '男 (乾造)' : '女 (坤造)';
   const startAgeInt = parseInt(input.startAge) || 1;
-  
+
   // Calculate Da Yun Direction accurately
   const yearStemPolarity = getStemPolarity(input.yearPillar);
   let isForward = false;
@@ -44,9 +44,9 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
   }
 
   const daYunDirectionStr = isForward ? '顺行 (Forward)' : '逆行 (Backward)';
-  
-  const directionExample = isForward 
-    ? "例如：第一步是【戊申】，第二步则是【己酉】（顺排）" 
+
+  const directionExample = isForward
+    ? "例如：第一步是【戊申】，第二步则是【己酉】（顺排）"
     : "例如：第一步是【戊申】，第二步则是【丁未】（逆排）";
 
   const userPrompt = `
@@ -102,7 +102,7 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: targetModel, 
+        model: targetModel,
         messages: [
           { role: "system", content: BAZI_SYSTEM_INSTRUCTION },
           { role: "user", content: userPrompt }
@@ -125,7 +125,16 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
     }
 
     // 解析 JSON
-    const data = JSON.parse(content);
+    let data;
+    try {
+      // 尝试清理 JSON 字符串 (处理可能的 Markdown 代码块 ```json ... ```)
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const cleanContent = jsonMatch ? jsonMatch[0] : content;
+      data = JSON.parse(cleanContent);
+    } catch (parseError) {
+      console.error("JSON Parse Error. Raw content:", content);
+      throw new Error("模型返回的数据格式无法解析 (可能包含了非 JSON 内容)。");
+    }
 
     // 简单校验数据完整性
     if (!data.chartPoints || !Array.isArray(data.chartPoints)) {
