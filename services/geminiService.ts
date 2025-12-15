@@ -95,27 +95,67 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
   `;
 
   try {
-    const response = await fetch(`${cleanBaseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: targetModel,
-        messages: [
-          { role: "system", content: BAZI_SYSTEM_INSTRUCTION },
-          { role: "user", content: userPrompt }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.7
-      })
-    });
+    let response;
+    let retries = 3;
+    let attempt = 0;
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`API 请求失败: ${response.status} - ${errText}`);
+    while (attempt < retries) {
+      try {
+        response = await fetch(`${cleanBaseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: targetModel,
+            messages: [
+              { role: "system", content: BAZI_SYSTEM_INSTRUCTION },
+              { role: "user", content: userPrompt }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.7
+          })
+        });
+
+        if (response.status === 503) {
+          attempt++;
+          console.warn(`Attempt ${attempt} failed with 503. Retrying...`);
+          if (attempt >= retries) {
+            const errText = await response.text();
+            throw new Error(`API 请求失败 (503 Service Unavailable) - 已重试 ${retries} 次: ${errText}`);
+          }
+          // Simple backoff: 1s, 2s, 3s... or fixed 2s
+          await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+          continue;
+        }
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`API 请求失败: ${response.status} - ${errText}`);
+        }
+
+        // If success, break loop
+        break;
+
+      } catch (err: any) {
+        // If it's a network error (fetch failed entirely), we might also want to retry, 
+        // but for now only targeting explicit 503 response as requested.
+        // Or if we threw 503 error above, rethrow it.
+        if (err.message.includes('503')) throw err;
+
+        // Retrying on network connection errors is also good practice
+        attempt++;
+        if (attempt >= retries) throw err;
+        console.warn(`Attempt ${attempt} failed with network error. Retrying...`, err.message);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     }
+
+    if (!response) {
+      throw new Error("API 请求发生未知错误");
+    }
+
 
     const jsonResult = await response.json();
     const content = jsonResult.choices?.[0]?.message?.content;
