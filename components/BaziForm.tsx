@@ -19,27 +19,29 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
     hourPillar: '',
     startAge: '',
     firstDaYun: '',
-    modelName: 'google/gemini-3-pro-preview',
-    apiBaseUrl: 'https://openrouter.ai/api/v1',
+    modelName: 'google/gemini-2.0-flash-exp',
+    apiBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+
     apiKey: '',
   });
 
-  const [formErrors, setFormErrors] = useState<{modelName?: string, apiBaseUrl?: string, apiKey?: string}>({});
+  const [formErrors, setFormErrors] = useState<{ modelName?: string, apiBaseUrl?: string, apiKey?: string }>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Clear error when user types
     if (name === 'apiBaseUrl' || name === 'apiKey' || name === 'modelName') {
+
       setFormErrors(prev => ({ ...prev, [name]: undefined }));
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate API Config
-    const errors: {modelName?: string, apiBaseUrl?: string, apiKey?: string} = {};
+    const errors: { modelName?: string, apiBaseUrl?: string, apiKey?: string } = {};
     if (!formData.modelName.trim()) {
       errors.modelName = '请输入模型名称';
     }
@@ -61,21 +63,21 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
   // Calculate direction for UI feedback
   const daYunDirectionInfo = useMemo(() => {
     if (!formData.yearPillar) return '等待输入年柱...';
-    
+
     const firstChar = formData.yearPillar.trim().charAt(0);
     const yangStems = ['甲', '丙', '戊', '庚', '壬'];
     const yinStems = ['乙', '丁', '己', '辛', '癸'];
-    
+
     let isYangYear = true; // default assume Yang if unknown
     if (yinStems.includes(firstChar)) isYangYear = false;
-    
+
     let isForward = false;
     if (formData.gender === Gender.MALE) {
       isForward = isYangYear; // Male Yang = Forward, Male Yin = Backward
     } else {
       isForward = !isYangYear; // Female Yin = Forward, Female Yang = Backward
     }
-    
+
     return isForward ? '顺行 (阳男/阴女)' : '逆行 (阴男/阳女)';
   }, [formData.yearPillar, formData.gender]);
 
@@ -87,12 +89,12 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        
+
         {/* Name & Gender */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">姓名 (可选)</label>
-             <input
+            <label className="block text-sm font-medium text-gray-700 mb-1">姓名 (可选)</label>
+            <input
               type="text"
               name="name"
               value={formData.name}
@@ -107,22 +109,20 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, gender: Gender.MALE })}
-                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${
-                  formData.gender === Gender.MALE
+                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${formData.gender === Gender.MALE
                     ? 'bg-white text-indigo-700 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 乾造 (男)
               </button>
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, gender: Gender.FEMALE })}
-                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${
-                  formData.gender === Gender.FEMALE
+                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${formData.gender === Gender.FEMALE
                     ? 'bg-white text-pink-700 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 坤造 (女)
               </button>
@@ -136,21 +136,21 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
             <Sparkles className="w-4 h-4" />
             <span>输入四柱干支 (必填)</span>
           </div>
-          
+
           {/* Birth Year Input - Added as requested */}
           <div className="mb-4">
-             <label className="block text-xs font-bold text-gray-600 mb-1">出生年份 (阳历)</label>
-             <input
-                type="number"
-                name="birthYear"
-                required
-                min="1900"
-                max="2100"
-                value={formData.birthYear}
-                onChange={handleChange}
-                placeholder="如: 1990"
-                className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none bg-white font-bold"
-              />
+            <label className="block text-xs font-bold text-gray-600 mb-1">出生年份 (阳历)</label>
+            <input
+              type="number"
+              name="birthYear"
+              required
+              min="1900"
+              max="2100"
+              value={formData.birthYear}
+              onChange={handleChange}
+              placeholder="如: 1990"
+              className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none bg-white font-bold"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -239,9 +239,9 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
               />
             </div>
           </div>
-           <p className="text-xs text-indigo-600/70 mt-2 text-center">
-             当前大运排序规则：
-             <span className="font-bold text-indigo-900">{daYunDirectionInfo}</span>
+          <p className="text-xs text-indigo-600/70 mt-2 text-center">
+            当前大运排序规则：
+            <span className="font-bold text-indigo-900">{daYunDirectionInfo}</span>
           </p>
         </div>
 
@@ -249,45 +249,46 @@ const BaziForm: React.FC<BaziFormProps> = ({ onSubmit, isLoading }) => {
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
           <div className="flex items-center gap-2 mb-3 text-gray-700 text-sm font-bold">
             <Settings className="w-4 h-4" />
-            <span>模型接口设置 (必填)</span>
+            <span>模型接口设置 (Google AI Studio)</span>
+
           </div>
           <div className="space-y-3">
-             <div>
-               <label className="block text-xs font-bold text-gray-600 mb-1">使用模型</label>
-               <input
-                  type="text"
-                  name="modelName"
-                  value={formData.modelName}
-                  onChange={handleChange}
-                  placeholder="google/gemini-3-pro-preview"
-                  className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.modelName ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
-                />
-                {formErrors.modelName && <p className="text-red-500 text-xs mt-1">{formErrors.modelName}</p>}
-             </div>
-             <div>
-               <label className="block text-xs font-bold text-gray-600 mb-1">API Base URL</label>
-               <input
-                  type="text"
-                  name="apiBaseUrl"
-                  value={formData.apiBaseUrl}
-                  onChange={handleChange}
-                  placeholder="google/gemini-3-pro-preview"
-                  className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.apiBaseUrl ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
-                />
-                {formErrors.apiBaseUrl && <p className="text-red-500 text-xs mt-1">{formErrors.apiBaseUrl}</p>}
-             </div>
-             <div>
-               <label className="block text-xs font-bold text-gray-600 mb-1">API Key</label>
-               <input
-                  type="password"
-                  name="apiKey"
-                  value={formData.apiKey}
-                  onChange={handleChange}
-                  placeholder="sk-..."
-                  className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.apiKey ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
-                />
-                {formErrors.apiKey && <p className="text-red-500 text-xs mt-1">{formErrors.apiKey}</p>}
-             </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">使用模型</label>
+              <input
+                type="text"
+                name="modelName"
+                value={formData.modelName}
+                onChange={handleChange}
+                placeholder="google/gemini-2.0-flash-exp"
+                className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.modelName ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
+              />
+              {formErrors.modelName && <p className="text-red-500 text-xs mt-1">{formErrors.modelName}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">API Base URL</label>
+              <input
+                type="text"
+                name="apiBaseUrl"
+                value={formData.apiBaseUrl}
+                onChange={handleChange}
+                placeholder="https://generativelanguage.googleapis.com/v1beta/openai/"
+                className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.apiBaseUrl ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
+              />
+              {formErrors.apiBaseUrl && <p className="text-red-500 text-xs mt-1">{formErrors.apiBaseUrl}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">API Key</label>
+              <input
+                type="password"
+                name="apiKey"
+                value={formData.apiKey}
+                onChange={handleChange}
+                placeholder="sk-..."
+                className={`w-full px-3 py-2 border rounded-lg text-xs font-mono outline-none ${formErrors.apiKey ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:ring-2 focus:ring-gray-400'}`}
+              />
+              {formErrors.apiKey && <p className="text-red-500 text-xs mt-1">{formErrors.apiKey}</p>}
+            </div>
           </div>
         </div>
 
